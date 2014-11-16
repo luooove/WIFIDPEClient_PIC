@@ -393,11 +393,11 @@ void Light_Level()
 {
   Light_val = analogRead(Light); //读取模拟值送给变量val
   Light_Update = Light_val;
-  rgbWriteDatagram[23] = (String)Light_val/1000;
+  rgbWriteDatagram[23] = (byte)Light_val/1000;
   Serial.println(rgbWriteDatagram[23]);
-  rgbWriteDatagram[24] = (String)(Light_val%1000)/100;
-  rgbWriteDatagram[25] = (String)(Light_val%100)/10;
-  rgbWriteDatagram[26] = (String)Light_val%10;
+  rgbWriteDatagram[24] = (byte)(Light_val%1000)/100;
+  rgbWriteDatagram[25] = (byte)(Light_val%100)/10;
+  rgbWriteDatagram[26] = (byte)Light_val%10;
  // Serial.print("Light_val: "); //串口打印变量data
  // Serial.println(Light_val); //串口打印变量data
   
