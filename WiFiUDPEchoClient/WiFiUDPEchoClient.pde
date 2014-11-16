@@ -60,7 +60,10 @@
 /************************************************************************/
 #include <DNETcK.h>
 #include <DWIFIcK.h>
+#include "Wire.h"
+#include "Adafruit_BMP085.h"
 
+Adafruit_BMP085 bmp;
 /************************************************************************/
 /*                                                                      */
 /*              SET THESE VALUES FOR YOUR NETWORK                       */
@@ -189,7 +192,7 @@ float Wind_Speed=0;
 int wind_count=0;
 int pbIn = 3;
 
-/*******Wind_Speed**********/
+/*******Light_Speed**********/
 int Light = A6;
 int Light_val=0;
 
@@ -264,6 +267,7 @@ void Sensors_Setup()
    // MsTimer2::set(1000, Caculate_Wind_Speed);        // 中断设置函数，每 1s 进入一次中断
   //  MsTimer2::start();
     attachInterrupt(pbIn, stateChange, FALLING);
+    bmp.begin();  
 }
 
 
@@ -295,8 +299,22 @@ void setup() {
  *      
  * ------------------------------------------------------------ */
 void loop() {
+    Light_Level();
     WIFI_Updata();
+//    Serial.print("Temperature = ");
+//    Serial.print(bmp.readTemperature());
+//    Serial.println(" *C");
+// 
+//    Serial.print("Pressure = ");
+//    Serial.print(bmp.readPressure());
+//    Serial.println(" Pa");
+// 
+//    Serial.println();
+    
+    delay(500);
 }
+
+
 
 
 void WIFI_Updata()
@@ -316,7 +334,7 @@ void WIFI_Updata()
                // udpClient.writeDatagram(12, 2);
              //   udpClient.writeDatagram("|", 2);
                 delay(1000);
-                Serial.println("Waiting to see if a datagram comes back:");
+           //     Serial.println("Waiting to see if a datagram comes back:");
               state = WRITE;         //state = READ;
                 tStart = (unsigned) millis();
                 }
@@ -375,8 +393,14 @@ void Light_Level()
 {
   Light_val = analogRead(Light); //读取模拟值送给变量val
   Light_Update = Light_val;
+  rgbWriteDatagram[23] = (String)Light_val/1000;
+  Serial.println(rgbWriteDatagram[23]);
+  rgbWriteDatagram[24] = (String)(Light_val%1000)/100;
+  rgbWriteDatagram[25] = (String)(Light_val%100)/10;
+  rgbWriteDatagram[26] = (String)Light_val%10;
  // Serial.print("Light_val: "); //串口打印变量data
  // Serial.println(Light_val); //串口打印变量data
+  
 }
 
 
@@ -403,7 +427,9 @@ void stateChange()
 void Updata_Water_Level()
 {
     val = analogRead(analogPin); //读取模拟值送给变量val
-    Water_Level_Update = val; //变量val 赋值给变量data
+    Water_Level_Update = val/1000; //变量val 赋值给变量data
+    rgbWriteDatagram[0] = (byte)Water_Level_Update%10;
+    rgbWriteDatagram[2] = (byte)(Water_Level_Update*10)%10;
    // Serial.println("_______________________");
   //  Serial.print("Water_Level:");
   //  Serial.println(data,2); //串口打印变量data
