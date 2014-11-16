@@ -151,7 +151,16 @@ byte rgbRead[1024];
 int cbRead = 0;
 
 // this is for udpClient.writeDatagram to write
-byte rgbWriteDatagram[] = {'1','1','1','|','123','|','1','|','92','|','34','|','98','|','98','\n'};
+byte rgbWriteDatagram[] = { '1','.','3','|',//降水量        两位 一位是小数
+                            ' ','1','6','0','|',//P2.5     
+                            ' ','6','5','|',//湿度
+                            ' ','2','0','.','8','|',//温度
+                            '2','.','8','|',//风速
+                            '1','1','1','1','|',//光照
+                            '9','6','4','.','4','|',//气压
+                            '1','|',//wind direction  
+                            '3','0','.','6','9','9','|',//纬度
+                            '1','0','4','.','0','4','8','\n'};//经度
 int cbWriteDatagram = sizeof(rgbWriteDatagram);
 
 /***      void setup()
@@ -221,7 +230,13 @@ void setup() {
  *      
  * ------------------------------------------------------------ */
 void loop() {
-    int cbRead = 0;
+    WIFI_Updata();
+}
+
+
+void WIFI_Updata()
+{
+  int cbRead = 0;
 
     switch(state)
     {
