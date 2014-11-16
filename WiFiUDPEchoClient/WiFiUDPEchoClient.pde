@@ -301,6 +301,7 @@ void setup() {
  * ------------------------------------------------------------ */
 void loop() {
     Light_Level();
+    Pressure();
     WIFI_Updata();
 //    Serial.print("Temperature = ");
 //    Serial.print(bmp.readTemperature());
@@ -524,11 +525,17 @@ double dewPointFast(double celsius, double humidity)
 }
 
 void Pressure()
-{
-       AirPressure = bmp.readPressure();
-       rgbWriteDatagram[] = AirPressure/1000;
-       rgbWriteDatagram[] = (AirPressure%1000)/100;
-       rgbWriteDatagram[] = (AirPressure%100)/10;
-       rgbWriteDatagram[] = AirPressure%10;
+{      
+       int temp = 0;
+       AirPressure = bmp.readPressure()/10;
+       temp = (AirPressure%100000)/10000;
+       if(temp == 0)
+         rgbWriteDatagram[28] = 0;
+       else
+         rgbWriteDatagram[28] = temp+48;
+       rgbWriteDatagram[29] = (AirPressure%10000)/1000+48;
+       rgbWriteDatagram[30] = (AirPressure%1000)/100+48;
+       rgbWriteDatagram[31] = (AirPressure%100)/10+48;
+       rgbWriteDatagram[33] = AirPressure%10+48;
 }
 
