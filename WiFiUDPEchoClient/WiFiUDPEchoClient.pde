@@ -154,16 +154,16 @@ byte rgbRead[1024];
 int cbRead = 0;
 
 // this is for udpClient.writeDatagram to write
-byte rgbWriteDatagram[] = { '1','.','3','|',//降水量        两位 一位是小数
-                            ' ','1','6','0','|',//P2.5     
-                            ' ','6','5','|',//湿度
-                            ' ','2','0','.','8','|',//温度
-                            '2','.','8','|',//风速
-                            '1','1','1','1','|',//光照
-                            '9','6','4','.','4','|',//气压
-                            '1','|',//wind direction  
-                            '3','0','.','6','9','9','|',//纬度
-                            '1','0','4','.','0','4','8','\n'};//经度
+byte rgbWriteDatagram[] = { '1','.','3','|',//降水量        两位 一位是小数  0
+                            ' ','1','6','0','|',//P2.5                    4
+                            ' ','6','5','|',//湿度                         9
+                            ' ','2','0','.','8','|',//温度                13
+                            '2','.','8','|',//风速                        19
+                            '1','1','1','1','|',//光照                    23
+                            ' ','9','6','4','.','4','|',//气压            28
+                            '1','|',//wind direction                     35
+                            '3','0','.','6','9','9','|',//纬度            37
+                            '1','0','4','.','0','4','8','\n'};//经度      44
 int cbWriteDatagram = sizeof(rgbWriteDatagram);
 
 
@@ -203,7 +203,8 @@ float Temperature_Update=0;
 float Wind_Speed_Update=0;
 float Light_Update=0;
 
-
+/*******Air Pressure**********/
+int AirPressure = 0;
 
 
 /***      void setup()
@@ -393,11 +394,11 @@ void Light_Level()
 {
   Light_val = analogRead(Light); //读取模拟值送给变量val
   Light_Update = Light_val;
-  rgbWriteDatagram[23] = (byte)Light_val/1000;
+  rgbWriteDatagram[23] = (Light_val/1000+48);
   Serial.println(rgbWriteDatagram[23]);
-  rgbWriteDatagram[24] = (byte)(Light_val%1000)/100;
-  rgbWriteDatagram[25] = (byte)(Light_val%100)/10;
-  rgbWriteDatagram[26] = (byte)Light_val%10;
+  rgbWriteDatagram[24] = (Light_val%1000)/100+48;
+  rgbWriteDatagram[25] = (Light_val%100)/10+48;
+  rgbWriteDatagram[26] = Light_val%10+48;
  // Serial.print("Light_val: "); //串口打印变量data
  // Serial.println(Light_val); //串口打印变量data
   
@@ -522,5 +523,12 @@ double dewPointFast(double celsius, double humidity)
         return Td;
 }
 
-
+void Pressure()
+{
+       AirPressure = bmp.readPressure();
+       rgbWriteDatagram[] = AirPressure/1000;
+       rgbWriteDatagram[] = (AirPressure%1000)/100;
+       rgbWriteDatagram[] = (AirPressure%100)/10;
+       rgbWriteDatagram[] = AirPressure%10;
+}
 
