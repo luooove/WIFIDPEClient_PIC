@@ -4,7 +4,7 @@
 /*                                                                      */
 /*      A chipKIT DNETcK UDP Client application to                      */
 /*      demonstrate how to use the UdpClient Class.                     */
-/*      This can be used in conjuction  with UDPEchoServer              */            
+/*      This can be used in conjuction  with UDPEchoServer              */
 /*                                                                      */
 /************************************************************************/
 /*      Author:       Keith Vogel                                       */
@@ -12,19 +12,19 @@
 /************************************************************************/
 /*
   This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+ 
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 /************************************************************************/
 /*                                                                      */
 /*                                                                      */
@@ -64,6 +64,20 @@
 #include "Adafruit_BMP085.h"
 
 Adafruit_BMP085 bmp;
+
+#include <SD.h>
+
+File myFile;
+// On the Ethernet Shield, CS is pin 4. It's set as an output by default.
+// Note that even if it's not used as the CS pin, the hardware SS pin 
+// (10 on most Arduino boards, 53 on the Mega) must be left as an output 
+// or the SD library functions will not work. 
+
+// Default SD chip select for Uno and Mega type devices
+const int chipSelect_SD_default = 10; // Change 10 to 53 for a Mega
+
+// chipSelect_SD can be changed if you do not use default CS pin
+const int chipSelect_SD = chipSelect_SD_default;
 /************************************************************************/
 /*                                                                      */
 /*              SET THESE VALUES FOR YOUR NETWORK                       */
@@ -86,45 +100,48 @@ const char * szSsid = "robot";
 // modify the security key to what you have.
 #if defined(USE_WPA2_PASSPHRASE)
 
-    const char * szPassPhrase = "swjtumakerspace";
-    #define WiFiConnectMacro() DWIFIcK::connect(szSsid, szPassPhrase, &status)
+const char * szPassPhrase = "swjtumakerspace";
+#define WiFiConnectMacro() DWIFIcK::connect(szSsid, szPassPhrase, &status)
 
 #elif defined(USE_WPA2_KEY)
 
-    DWIFIcK::WPA2KEY key = { 0x27, 0x2C, 0x89, 0xCC, 0xE9, 0x56, 0x31, 0x1E, 
-                            0x3B, 0xAD, 0x79, 0xF7, 0x1D, 0xC4, 0xB9, 0x05, 
-                            0x7A, 0x34, 0x4C, 0x3E, 0xB5, 0xFA, 0x38, 0xC2, 
-                            0x0F, 0x0A, 0xB0, 0x90, 0xDC, 0x62, 0xAD, 0x58 };
-    #define WiFiConnectMacro() DWIFIcK::connect(szSsid, key, &status)
+DWIFIcK::WPA2KEY key = { 
+  0x27, 0x2C, 0x89, 0xCC, 0xE9, 0x56, 0x31, 0x1E, 
+  0x3B, 0xAD, 0x79, 0xF7, 0x1D, 0xC4, 0xB9, 0x05, 
+  0x7A, 0x34, 0x4C, 0x3E, 0xB5, 0xFA, 0x38, 0xC2, 
+  0x0F, 0x0A, 0xB0, 0x90, 0xDC, 0x62, 0xAD, 0x58 };
+#define WiFiConnectMacro() DWIFIcK::connect(szSsid, key, &status)
 
 #elif defined(USE_WEP40)
 
-    const int iWEPKey = 0;
-    DWIFIcK::WEP40KEY keySet = {    0xBE, 0xC9, 0x58, 0x06, 0x97,     // Key 0
-                                    0x00, 0x00, 0x00, 0x00, 0x00,     // Key 1
-                                    0x00, 0x00, 0x00, 0x00, 0x00,     // Key 2
-                                    0x00, 0x00, 0x00, 0x00, 0x00 };   // Key 3
-    #define WiFiConnectMacro() DWIFIcK::connect(szSsid, keySet, iWEPKey, &status)
+const int iWEPKey = 0;
+DWIFIcK::WEP40KEY keySet = {    
+  0xBE, 0xC9, 0x58, 0x06, 0x97,     // Key 0
+  0x00, 0x00, 0x00, 0x00, 0x00,     // Key 1
+  0x00, 0x00, 0x00, 0x00, 0x00,     // Key 2
+  0x00, 0x00, 0x00, 0x00, 0x00 };   // Key 3
+#define WiFiConnectMacro() DWIFIcK::connect(szSsid, keySet, iWEPKey, &status)
 
 #elif defined(USE_WEP104)
 
-    const int iWEPKey = 0;
-    DWIFIcK::WEP104KEY keySet = {   0x3E, 0xCD, 0x30, 0xB2, 0x55, 0x2D, 0x3C, 0x50, 0x52, 0x71, 0xE8, 0x83, 0x91,   // Key 0
-                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // Key 1
-                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // Key 2
-                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; // Key 3
-    #define WiFiConnectMacro() DWIFIcK::connect(szSsid, keySet, iWEPKey, &status)
+const int iWEPKey = 0;
+DWIFIcK::WEP104KEY keySet = {   
+  0x3E, 0xCD, 0x30, 0xB2, 0x55, 0x2D, 0x3C, 0x50, 0x52, 0x71, 0xE8, 0x83, 0x91,   // Key 0
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // Key 1
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // Key 2
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; // Key 3
+#define WiFiConnectMacro() DWIFIcK::connect(szSsid, keySet, iWEPKey, &status)
 
 #elif defined(USE_WF_CONFIG_H)
 
-    #define WiFiConnectMacro() DWIFIcK::connect(0, &status)
+#define WiFiConnectMacro() DWIFIcK::connect(0, &status)
 
 #else   // no security - OPEN
 
-    #define WiFiConnectMacro() DWIFIcK::connect(szSsid, &status)
+#define WiFiConnectMacro() DWIFIcK::connect(szSsid, &status)
 
 #endif
-   
+
 //******************************************************************************************
 //******************************************************************************************
 //***************************** END OF CONFIGURATION ***************************************
@@ -133,12 +150,13 @@ const char * szSsid = "robot";
 
 typedef enum
 {
-    NONE = 0,
-    WRITE,
-    READ,
-    CLOSE,
-    DONE,
-} STATE;
+  NONE = 0,
+  WRITE,
+  READ,
+  CLOSE,
+  DONE,
+} 
+STATE;
 
 STATE state = WRITE;
 
@@ -154,16 +172,17 @@ byte rgbRead[1024];
 int cbRead = 0;
 
 // this is for udpClient.writeDatagram to write
-byte rgbWriteDatagram[] = { '1','.','3','|',//降水量        两位 一位是小数  0
-                            ' ','1','6','0','|',//P2.5                    4
-                            ' ','6','5','|',//湿度                         9
-                            ' ','2','0','.','8','|',//温度                13
-                            '2','.','8','|',//风速                        19
-                            '1','1','1','1','|',//光照                    23
-                            ' ','9','6','4','.','4','|',//气压            28
-                            '1','|',//wind direction                     35
-                            '3','0','.','6','9','9','|',//纬度            37
-                            '1','0','4','.','0','4','8','\n'};//经度      44
+byte rgbWriteDatagram[] = { 
+  '1','.','3','|',//降水量        两位 一位是小数  0
+  ' ','1','6','0','|',//P2.5                    4
+  ' ','6','5','|',//湿度                         9
+  ' ','2','0','.','8','|',//温度                13
+  '2','.','8','|',//风速                        19
+  '1','1','1','1','|',//光照                    23
+  ' ','9','6','4','.','4','|',//气压            28
+  '1','|',//wind direction                     35
+  '3','0','.','6','9','9','|',//纬度            37
+  '1','0','4','.','0','4','8','\n'};//经度      44
 int cbWriteDatagram = sizeof(rgbWriteDatagram);
 
 
@@ -198,8 +217,8 @@ int Light_val=0;
 
 float Water_Level_Update=0;
 float PM25_Update=0;
-float Humidity_Update=0;
-float Temperature_Update=0;
+int   Humidity_Update=0;
+int Temperature_Update=0;
 float Wind_Speed_Update=0;
 float Light_Update=0;
 
@@ -225,59 +244,114 @@ int AirPressure = 0;
  *      by default we connect to port 44400
  *      
  * ------------------------------------------------------------ */
- 
+
+
+void SD_Setup()
+{
+  Serial.print("Initializing SD card...");
+
+  // Make sure the default chip select pin is set to so that
+  // shields that have a device that use the default CS pin
+  // that are connected to the SPI bus do not hold drive bus
+  pinMode(chipSelect_SD_default, OUTPUT);
+  digitalWrite(chipSelect_SD_default, HIGH);
+
+  pinMode(chipSelect_SD, OUTPUT);
+  digitalWrite(chipSelect_SD, HIGH);
+
+  if (!SD.begin(chipSelect_SD)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  myFile = SD.open("test.txt", FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.print("Writing to test.txt...");
+    myFile.println("testing 1, 2, 3.");
+    // close the file:
+    myFile.close();
+    Serial.println("done.");
+  } 
+  else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening test.txt");
+  }
+
+  // re-open the file for reading:
+  myFile = SD.open("test.txt");
+  if (myFile) {
+    Serial.println("test.txt:");
+
+    // read from the file until there's nothing else in it:
+    while (myFile.available()) {
+      Serial.write(myFile.read());
+    }
+    // close the file:
+    myFile.close();
+  } 
+  else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening test.txt");
+  }
+}
 void WIFI_Setup()
 {
   DNETcK::STATUS status;
-    int conID = DWIFIcK::INVALID_CONNECTION_ID;
- 
-    
-    Serial.println("WiFiUDPEchoClient 1.0");
-    Serial.println("Digilent, Copyright 2012");
-    Serial.println("");
+  int conID = DWIFIcK::INVALID_CONNECTION_ID;
 
-    if((conID = WiFiConnectMacro()) != DWIFIcK::INVALID_CONNECTION_ID)
-    {
-        Serial.print("Connection Created, ConID = ");
-        Serial.println(conID, DEC);
-        state = WRITE;
-    }
-    else
-    {
-        Serial.print("Unable to connection, status: ");
-        Serial.println(status, DEC);
-        state = CLOSE;
-    }
 
-    // use DHCP to get our IP and network addresses
-    DNETcK::begin();
+  Serial.println("WiFiUDPEchoClient 1.0");
+  Serial.println("Digilent, Copyright 2012");
+  Serial.println("");
 
-    // make a connection to our echo server
-    udpClient.setEndPoint(szIPServer, portServer);
+  if((conID = WiFiConnectMacro()) != DWIFIcK::INVALID_CONNECTION_ID)
+  {
+    Serial.print("Connection Created, ConID = ");
+    Serial.println(conID, DEC);
+    state = WRITE;
+  }
+  else
+  {
+    Serial.print("Unable to connection, status: ");
+    Serial.println(status, DEC);
+    state = CLOSE;
+  }
+
+  // use DHCP to get our IP and network addresses
+  DNETcK::begin();
+
+  // make a connection to our echo server
+  udpClient.setEndPoint(szIPServer, portServer);
 }
 
 void Sensors_Setup()
 {
-    pinMode(ledPower,OUTPUT);
-    pinMode(dustPin, INPUT);
-    Serial.println("DHT11 TEST PROGRAM ");
-    Serial.print("LIBRARY VERSION: ");
-    Serial.println(DHT11LIB_VERSION);
-    Serial.println();
-    
-   // MsTimer2::set(1000, Caculate_Wind_Speed);        // 中断设置函数，每 1s 进入一次中断
+  pinMode(ledPower,OUTPUT);
+  pinMode(dustPin, INPUT);
+  Serial.println("DHT11 TEST PROGRAM ");
+  Serial.print("LIBRARY VERSION: ");
+  Serial.println(DHT11LIB_VERSION);
+  Serial.println();
+
+  // MsTimer2::set(1000, Caculate_Wind_Speed);        // 中断设置函数，每 1s 进入一次中断
   //  MsTimer2::start();
-    attachInterrupt(pbIn, stateChange, FALLING);
-    bmp.begin();  
+  attachInterrupt(pbIn, stateChange, FALLING);
+  bmp.begin();  
 }
 
 
 
 
 void setup() {
-    Serial.begin(9600);
-    WIFI_Setup();
-    Sensors_Setup();
+  Serial.begin(9600);
+  SD_Setup();
+  WIFI_Setup();
+  Sensors_Setup();
 }
 
 /***      void loop()
@@ -300,20 +374,21 @@ void setup() {
  *      
  * ------------------------------------------------------------ */
 void loop() {
-    Light_Level();
-    Pressure();
-    WIFI_Updata();
-//    Serial.print("Temperature = ");
-//    Serial.print(bmp.readTemperature());
-//    Serial.println(" *C");
-// 
-//    Serial.print("Pressure = ");
-//    Serial.print(bmp.readPressure());
-//    Serial.println(" Pa");
-// 
-//    Serial.println();
-    
-    delay(500);
+  Light_Level();
+  Pressure();
+  Updata_Temperature_Humidity();
+  WIFI_Updata();
+  //    Serial.print("Temperature = ");
+  //    Serial.print(bmp.readTemperature());
+  //    Serial.println(" *C");
+  // 
+  //    Serial.print("Pressure = ");
+  //    Serial.print(bmp.readPressure());
+  //    Serial.println(" Pa");
+  // 
+  //    Serial.println();
+
+  delay(500);
 }
 
 
@@ -323,68 +398,68 @@ void WIFI_Updata()
 {
   int cbRead = 0;
 
-    switch(state)
+  switch(state)
+  {
+
+    // write out the strings  
+  case WRITE:
+    if(udpClient.isEndPointResolved())
+    {     
+      Serial.println("Writing out Datagram");
+
+      udpClient.writeDatagram(rgbWriteDatagram, cbWriteDatagram);
+      // udpClient.writeDatagram(12, 2);
+      //   udpClient.writeDatagram("|", 2);
+      delay(1000);
+      //     Serial.println("Waiting to see if a datagram comes back:");
+      state = WRITE;         //state = READ;
+      tStart = (unsigned) millis();
+    }
+    break;
+
+    // look for the echo back
+  case READ:
+
+    // see if we got anything to read
+    if((cbRead = udpClient.available()) > 0)
     {
 
-       // write out the strings  
-       case WRITE:
-            if(udpClient.isEndPointResolved())
-                {     
-                Serial.println("Writing out Datagram");
-  
-                udpClient.writeDatagram(rgbWriteDatagram, cbWriteDatagram);
-               // udpClient.writeDatagram(12, 2);
-             //   udpClient.writeDatagram("|", 2);
-                delay(1000);
-           //     Serial.println("Waiting to see if a datagram comes back:");
-              state = WRITE;         //state = READ;
-                tStart = (unsigned) millis();
-                }
-            break;
+      cbRead = cbRead < sizeof(rgbRead) ? cbRead : sizeof(rgbRead);
+      cbRead = udpClient.readDatagram(rgbRead, cbRead);
 
-        // look for the echo back
-         case READ:
+      for(int i=0; i < cbRead; i++) 
+      {
+        Serial.print(rgbRead[i], BYTE);
+      }
 
-            // see if we got anything to read
-            if((cbRead = udpClient.available()) > 0)
-            {
-
-                cbRead = cbRead < sizeof(rgbRead) ? cbRead : sizeof(rgbRead);
-                cbRead = udpClient.readDatagram(rgbRead, cbRead);
- 
-                for(int i=0; i < cbRead; i++) 
-                {
-                    Serial.print(rgbRead[i], BYTE);
-                }
-
-                // give us some more time to wait for stuff to come back
-                tStart = (unsigned) millis();
-            }
-
-            // give us some time to get everything echo'ed back
-            // or if the datagram is never echoed back
-            else if( (((unsigned) millis()) - tStart) > tWait )
-            {
-                Serial.println("Done waiting, assuming nothing more is coming");
-                Serial.println("");
-                state = CLOSE;
-            }
-            break;
-
-        // done, so close up the tcpClient
-        case CLOSE:
-            udpClient.close();
-            Serial.println("Closing udpClient, Done with sketch.");
-            state = DONE;
-            break;
-
-        case DONE:
-        default:
-            break;
+      // give us some more time to wait for stuff to come back
+      tStart = (unsigned) millis();
     }
 
-    // keep the stack alive each pass through the loop()
-    DNETcK::periodicTasks(); 
+    // give us some time to get everything echo'ed back
+    // or if the datagram is never echoed back
+    else if( (((unsigned) millis()) - tStart) > tWait )
+    {
+      Serial.println("Done waiting, assuming nothing more is coming");
+      Serial.println("");
+      state = CLOSE;
+    }
+    break;
+
+    // done, so close up the tcpClient
+  case CLOSE:
+    udpClient.close();
+    Serial.println("Closing udpClient, Done with sketch.");
+    state = DONE;
+    break;
+
+  case DONE:
+  default:
+    break;
+  }
+
+  // keep the stack alive each pass through the loop()
+  DNETcK::periodicTasks(); 
 }
 
 
@@ -400,18 +475,22 @@ void Light_Level()
   rgbWriteDatagram[24] = (Light_val%1000)/100+48;
   rgbWriteDatagram[25] = (Light_val%100)/10+48;
   rgbWriteDatagram[26] = Light_val%10+48;
- // Serial.print("Light_val: "); //串口打印变量data
- // Serial.println(Light_val); //串口打印变量data
-  
+  // Serial.print("Light_val: "); //串口打印变量data
+  // Serial.println(Light_val); //串口打印变量data
+
 }
 
 
 /***********************************/
 void Caculate_Wind_Speed()
 {
-   Wind_Speed = (float)wind_count/24;
-   Wind_Speed_Update = Wind_Speed;
-   wind_count=0;
+  int temp=0;
+  Wind_Speed = (float)wind_count/2.4;
+  Wind_Speed_Update = Wind_Speed;
+  temp = (int)Wind_Speed;
+  rgbWriteDatagram[19] = temp/10;
+  rgbWriteDatagram[21] = temp%10;
+  wind_count=0;
 }
 void Updata_Wind_Speed()
 {
@@ -428,14 +507,14 @@ void stateChange()
 /***********************************/
 void Updata_Water_Level()
 {
-    val = analogRead(analogPin); //读取模拟值送给变量val
-    Water_Level_Update = val/1000; //变量val 赋值给变量data
-    rgbWriteDatagram[0] = (byte)Water_Level_Update%10;
-    rgbWriteDatagram[2] = (byte)(Water_Level_Update*10)%10;
-   // Serial.println("_______________________");
+  val = analogRead(analogPin); //读取模拟值送给变量val
+  Water_Level_Update = val/1000; //变量val 赋值给变量data
+  rgbWriteDatagram[0] = (byte)Water_Level_Update%10;
+  rgbWriteDatagram[2] = (byte)(Water_Level_Update*10)%10;
+  // Serial.println("_______________________");
   //  Serial.print("Water_Level:");
   //  Serial.println(data,2); //串口打印变量data
-   // delay(100);
+  // delay(100);
 }
 
 
@@ -443,99 +522,119 @@ void Updata_Water_Level()
 /***********************************/
 void Updata_PM25()
 {
-    // ledPower is any digital pin on the arduino connected to Pin 3 on the sensor
-    digitalWrite(ledPower,LOW); 
-    delayMicroseconds(delayTime);
-    dustVal=analogRead(dustPin); 
-    delayMicroseconds(delayTime2);
-    digitalWrite(ledPower,HIGH); 
-    delayMicroseconds(offTime);
-   // delay(100);
-   // Serial.print("PM2.5:  ");
+  int temp= 0;
+  // ledPower is any digital pin on the arduino connected to Pin 3 on the sensor
+  digitalWrite(ledPower,LOW); 
+  delayMicroseconds(delayTime);
+  dustVal=analogRead(dustPin); 
+  delayMicroseconds(delayTime2);
+  digitalWrite(ledPower,HIGH); 
+  delayMicroseconds(offTime);
+  // delay(100);
+  // Serial.print("PM2.5:  ");
   //  Serial.println((float(dustVal/1024)-0.0356)*120000*0.035,2);
-    PM25_Update = (float(dustVal/1024)-0.0356)*120000*0.035;
+  PM25_Update = (float(dustVal/1024)-0.0356)*120000*0.035;
+  temp = (int)PM25_Update/5;
+  rgbWriteDatagram[5] = temp/100;
+  rgbWriteDatagram[6] = (temp%100)/10;
+  rgbWriteDatagram[7] = temp%10;
+  
 }
 
 
 /***********************************/
 void Updata_Temperature_Humidity()
-{
-      int chk = DHT11.read(DHT11PIN);
-      //Serial.print("Read sensor: ");
-      switch (chk)
-      {
-        case DHTLIB_OK: 
-                 //   Serial.println("OK"); 
-                    break;
-        case DHTLIB_ERROR_CHECKSUM: 
-                    Serial.println("Checksum error"); 
-                    break;
-        case DHTLIB_ERROR_TIMEOUT: 
-                    Serial.println("Time out error"); 
-                    break;
-        default: 
-                    Serial.println("Unknown error"); 
-                    break;
-      }
-    
-     // Serial.print("Humidity (%): ");
-    //  Serial.println((float)DHT11.humidity, 2);
-      Humidity_Update = (float)DHT11.humidity;
-    //  Serial.print("Temperature (oC): ");
-    //  Serial.println((float)DHT11.temperature, 2);
-      Temperature_Update = (float)DHT11.temperature;
-     // delay(2000);
+{  
+  int temp = 0;
+  int chk = DHT11.read(DHT11PIN);
+  //Serial.print("Read sensor: ");
+  switch (chk)
+  {
+  case DHTLIB_OK: 
+    //   Serial.println("OK"); 
+    break;
+  case DHTLIB_ERROR_CHECKSUM: 
+    Serial.println("Checksum error"); 
+    break;
+  case DHTLIB_ERROR_TIMEOUT: 
+    Serial.println("Time out error"); 
+    break;
+  default: 
+    Serial.println("Unknown error"); 
+    break;
+  }
+
+  // Serial.print("Humidity (%): ");
+  //  Serial.println((float)DHT11.humidity, 2);
+  Humidity_Update = (float)DHT11.humidity;
+  temp = Humidity_Update%100;
+  if(temp == 0)
+    rgbWriteDatagram[9] = 0;
+  else
+    rgbWriteDatagram[9] = temp+48;
+  rgbWriteDatagram[10] = (Humidity_Update%100)/10+48;
+  rgbWriteDatagram[11] = Humidity_Update%10+48;
+  //  Serial.print("Temperature (oC): ");
+  //  Serial.println((float)DHT11.temperature, 2);
+
+  Temperature_Update = DHT11.temperature * 10;
+  temp = Temperature_Update%1000;
+  if(temp == 0)
+    rgbWriteDatagram[13] = 0;
+  else
+    rgbWriteDatagram[13] = temp+48;
+  rgbWriteDatagram[14] = (Temperature_Update%1000)/100+48;
+  rgbWriteDatagram[15] = (Temperature_Update)/10+48;
+  rgbWriteDatagram[17] = Temperature_Update%10+48;
+  // delay(2000);
 }
 
 
-double Fahrenheit(double celsius) 
-{
-        return 1.8 * celsius + 32;
-}    //摄氏温度度转化为华氏温度
 
 double Kelvin(double celsius)
 {
-        return celsius + 273.15;
+  return celsius + 273.15;
 }     //摄氏温度转化为开氏温度
 
 // 露点（点在此温度时，空气饱和并产生露珠）
 // 参考: http://wahiduddin.net/calc/density_algorithms.htm 
 double dewPoint(double celsius, double humidity)
 {
-        double AA0= 373.15/(273.15 + celsius);
-        double SUM = -7.90298 * (AA0-1);
-        SUM += 5.02808 * log10(AA0);
-        SUM += -1.3816e-7 * (pow(10, (11.344*(1-1/AA0)))-1) ;
-        SUM += 8.1328e-3 * (pow(10,(-3.49149*(AA0-1)))-1) ;
-        SUM += log10(1013.246);
-        double VP = pow(10, SUM-3) * humidity;
-        double T = log(VP/0.61078);   // temp var
-        return (241.88 * T) / (17.558-T);
+  double AA0= 373.15/(273.15 + celsius);
+  double SUM = -7.90298 * (AA0-1);
+  SUM += 5.02808 * log10(AA0);
+  SUM += -1.3816e-7 * (pow(10, (11.344*(1-1/AA0)))-1) ;
+  SUM += 8.1328e-3 * (pow(10,(-3.49149*(AA0-1)))-1) ;
+  SUM += log10(1013.246);
+  double VP = pow(10, SUM-3) * humidity;
+  double T = log(VP/0.61078);   // temp var
+  return (241.88 * T) / (17.558-T);
 }
 
 // 快速计算露点，速度是5倍dewPoint()
 // 参考: http://en.wikipedia.org/wiki/Dew_point
 double dewPointFast(double celsius, double humidity)
 {
-        double a = 17.271;
-        double b = 237.7;
-        double temp = (a * celsius) / (b + celsius) + log(humidity/100);
-        double Td = (b * temp) / (a - temp);
-        return Td;
+  double a = 17.271;
+  double b = 237.7;
+  double temp = (a * celsius) / (b + celsius) + log(humidity/100);
+  double Td = (b * temp) / (a - temp);
+  return Td;
 }
 
 void Pressure()
 {      
-       int temp = 0;
-       AirPressure = bmp.readPressure()/10;
-       temp = (AirPressure%100000)/10000;
-       if(temp == 0)
-         rgbWriteDatagram[28] = 0;
-       else
-         rgbWriteDatagram[28] = temp+48;
-       rgbWriteDatagram[29] = (AirPressure%10000)/1000+48;
-       rgbWriteDatagram[30] = (AirPressure%1000)/100+48;
-       rgbWriteDatagram[31] = (AirPressure%100)/10+48;
-       rgbWriteDatagram[33] = AirPressure%10+48;
+  int temp = 0;
+  AirPressure = bmp.readPressure()/10;
+  temp = (AirPressure%100000)/10000;
+  if(temp == 0)
+    rgbWriteDatagram[28] = 0;
+  else
+    rgbWriteDatagram[28] = temp+48;
+  rgbWriteDatagram[29] = (AirPressure%10000)/1000+48;
+  rgbWriteDatagram[30] = (AirPressure%1000)/100+48;
+  rgbWriteDatagram[31] = (AirPressure%100)/10+48;
+  rgbWriteDatagram[33] = AirPressure%10+48;
 }
+
 
