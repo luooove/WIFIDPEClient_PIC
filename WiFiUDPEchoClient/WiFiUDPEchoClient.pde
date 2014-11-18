@@ -47,11 +47,11 @@
 2014年11月18日
 Designer：骆晓祥 刘宇林 王衡
 测量值：	传感器						        端口
-温湿度		DTH11						数字口1
+温湿度		DTH11						数字口10
 PM2.5		GP2Y1010AU0F 				        模拟口A0 数字口2
-气压		BMP180						
+气压		BMP180						SCL 
 液位		液位传感器（电容）			                模拟口A11
-风速		光电开关	
+风速		光电开关	                                        数字口3
 光线		光线传感器 模拟输出 			        模拟口A6
 风向		光线传感器 模拟输出 			        模拟口A1				
 */
@@ -214,7 +214,7 @@ int data = 0; //定义变量data 初值为0
 /********温湿度**********/
 #include <dht11.h>
 dht11 DHT11;
-#define DHT11PIN 1
+#define DHT11PIN 10
 
 /*******PM2.5**********/
 int dustPin=A0;
@@ -403,11 +403,12 @@ void setup() {
  * ------------------------------------------------------------ */
 void loop() {
   Light_Level();
-  //Pressure();
+  Pressure();
   Caculate_Wind_Speed();
   Updata_Water_Level();
-  //Updata_Temperature_Humidity();
+  Updata_Temperature_Humidity();
   Updata_PM25();
+  WindDirUpdata();
   WIFI_Updata();
   //    Serial.print("Temperature = ");
   //    Serial.print(bmp.readTemperature());
@@ -539,7 +540,9 @@ void stateChange()
 void Updata_Water_Level()
 {
   val = analogRead(analogPin); //读取模拟值送给变量val
-  Water_Level_Update = val/1000; //变量val 赋值给变量data
+  Serial.print("Water");
+  Serial.println(val);
+  Water_Level_Update = val%1000; //变量val 赋值给变量data
   rgbWriteDatagram[0] = (byte)Water_Level_Update%10+48;
   rgbWriteDatagram[2] = (byte)(Water_Level_Update*10)%10+48;
   // Serial.println("_______________________");
@@ -673,10 +676,14 @@ void Pressure()
   rgbWriteDatagram[33] = AirPressure%10+48;
 }
 
-void WindSpeedUpdata()
+void WindDirUpdata()
 {
-  sensorValue = analogRead(WindDir);    
-  WindDirValue = ((WindDirValue*5/1023)-0.4)/16*360;
+  WindDirValue = analogRead(WindDir);    
+  Serial.print("V:");
+  Serial.println(WindDirValue);
+  WindDirValue = ((WindDirValue*5/1023)-0.4)/16*360/1.66;
+  Serial.print("windDir:");
+  Serial.println(WindDirValue);
   if(WindDirValue<4.5)
     rgbWriteDatagram[35] = 1+48;
   if(WindDirValue>=4.5 && WindDirValue <9)
