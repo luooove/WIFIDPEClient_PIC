@@ -225,6 +225,12 @@ float Light_Update=0;
 /*******Air Pressure**********/
 int AirPressure = 0;
 
+/*******Wind_Dir**********/
+//int WindSpeed = A0;    // select the input pin for the potentiometer
+int WindDir = A1;    // select the input pin for the potentiometer
+int sensorValue = 0;  // variable to store the value coming from the sensor
+//float WindSpeedValue = 0;
+float WindDirValue = 0;
 
 /***      void setup()
  *
@@ -644,5 +650,32 @@ void Pressure()
   rgbWriteDatagram[31] = (AirPressure%100)/10+48;
   rgbWriteDatagram[33] = AirPressure%10+48;
 }
+
+void WindSpeedUpdata()
+{
+  sensorValue = analogRead(WindDir);    
+  WindDirValue = ((WindDirValue*5/1023)-0.4)/16*360;
+  if(WindDirValue<4.5)
+    rgbWriteDatagram[35] = 1+48;
+  if(WindDirValue>=4.5 && WindDirValue <9)
+    rgbWriteDatagram[35] = 2+48;
+  if(WindDirValue>=9 && WindDirValue <13.5)
+    rgbWriteDatagram[35] = 3+48;
+  if(WindDirValue>=13.5 && WindDirValue <18)
+    rgbWriteDatagram[35] = 4+48;
+    
+  if(WindDirValue>=18 && WindDirValue <22.5)
+    rgbWriteDatagram[35] = 5+48;
+  if(WindDirValue>=22.5 && WindDirValue <27)
+    rgbWriteDatagram[35] = 6+48;
+  if(WindDirValue>=27 && WindDirValue <31.5)
+    rgbWriteDatagram[35] = 7+48;
+  if(WindDirValue>=31.5)
+    rgbWriteDatagram[35] = 8+48;
+    
+    
+  
+}
+
 
 
