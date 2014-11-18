@@ -265,7 +265,7 @@ void SD_Setup()
   pinMode(chipSelect_SD, OUTPUT);
   digitalWrite(chipSelect_SD, HIGH);
 
-  if (!SD.begin(chipSelect_SD)) {
+  if (!SD.begin(51)) {
     Serial.println("initialization failed!");
     return;
   }
@@ -305,6 +305,10 @@ void SD_Setup()
     Serial.println("error opening test.txt");
   }
 }
+
+
+
+
 void WIFI_Setup()
 {
   DNETcK::STATUS status;
