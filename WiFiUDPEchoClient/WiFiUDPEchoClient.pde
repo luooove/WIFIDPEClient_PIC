@@ -430,6 +430,7 @@ void loop() {
   Updata_Temperature_Humidity();
   Updata_PM25();
   WindDirUpdata();
+  GPS_Updata();
   WIFI_Updata();
   //    Serial.print("Temperature = ");
   //    Serial.print(bmp.readTemperature());
