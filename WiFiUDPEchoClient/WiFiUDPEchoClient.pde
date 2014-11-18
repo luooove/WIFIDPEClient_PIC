@@ -218,7 +218,7 @@ int Light_val=0;
 float Water_Level_Update=0;
 float PM25_Update=0;
 int   Humidity_Update=0;
-int Temperature_Update=0;
+float Temperature_Update=0;
 float Wind_Speed_Update=0;
 float Light_Update=0;
 
@@ -375,8 +375,11 @@ void setup() {
  * ------------------------------------------------------------ */
 void loop() {
   Light_Level();
-  Pressure();
-  Updata_Temperature_Humidity();
+  //Pressure();
+  Caculate_Wind_Speed();
+  Updata_Water_Level();
+  //Updata_Temperature_Humidity();
+  Updata_PM25();
   WIFI_Updata();
   //    Serial.print("Temperature = ");
   //    Serial.print(bmp.readTemperature());
@@ -488,8 +491,8 @@ void Caculate_Wind_Speed()
   Wind_Speed = (float)wind_count/2.4;
   Wind_Speed_Update = Wind_Speed;
   temp = (int)Wind_Speed;
-  rgbWriteDatagram[19] = temp/10;
-  rgbWriteDatagram[21] = temp%10;
+  rgbWriteDatagram[19] = temp/10+48;
+  rgbWriteDatagram[21] = temp%10+48;
   wind_count=0;
 }
 void Updata_Wind_Speed()
@@ -509,8 +512,8 @@ void Updata_Water_Level()
 {
   val = analogRead(analogPin); //读取模拟值送给变量val
   Water_Level_Update = val/1000; //变量val 赋值给变量data
-  rgbWriteDatagram[0] = (byte)Water_Level_Update%10;
-  rgbWriteDatagram[2] = (byte)(Water_Level_Update*10)%10;
+  rgbWriteDatagram[0] = (byte)Water_Level_Update%10+48;
+  rgbWriteDatagram[2] = (byte)(Water_Level_Update*10)%10+48;
   // Serial.println("_______________________");
   //  Serial.print("Water_Level:");
   //  Serial.println(data,2); //串口打印变量data
@@ -534,10 +537,12 @@ void Updata_PM25()
   // Serial.print("PM2.5:  ");
   //  Serial.println((float(dustVal/1024)-0.0356)*120000*0.035,2);
   PM25_Update = (float(dustVal/1024)-0.0356)*120000*0.035;
+  Serial.println(PM25_Update);
   temp = (int)PM25_Update/5;
-  rgbWriteDatagram[5] = temp/100;
-  rgbWriteDatagram[6] = (temp%100)/10;
-  rgbWriteDatagram[7] = temp%10;
+  Serial.println(temp);
+  rgbWriteDatagram[5] = temp/100+48;
+  rgbWriteDatagram[6] = (temp%100)/10+48;
+  rgbWriteDatagram[7] = temp%10+48;
   
 }
 
@@ -546,6 +551,7 @@ void Updata_PM25()
 void Updata_Temperature_Humidity()
 {  
   int temp = 0;
+  int Temperature_temp = 0 ;
   int chk = DHT11.read(DHT11PIN);
   //Serial.print("Read sensor: ");
   switch (chk)
@@ -571,21 +577,23 @@ void Updata_Temperature_Humidity()
   if(temp == 0)
     rgbWriteDatagram[9] = 0;
   else
-    rgbWriteDatagram[9] = temp+48;
+    rgbWriteDatagram[9] = 0;
   rgbWriteDatagram[10] = (Humidity_Update%100)/10+48;
-  rgbWriteDatagram[11] = Humidity_Update%10+48;
+  rgbWriteDatagram[11] = (Humidity_Update%10)+48;
   //  Serial.print("Temperature (oC): ");
   //  Serial.println((float)DHT11.temperature, 2);
 
-  Temperature_Update = DHT11.temperature * 10;
-  temp = Temperature_Update%1000;
+  Temperature_Update = (DHT11.temperature) * 10;
+  Serial.println(Temperature_Update);
+  Temperature_temp = (int)Temperature_Update;
+  temp = Temperature_temp/1000;
   if(temp == 0)
     rgbWriteDatagram[13] = 0;
   else
     rgbWriteDatagram[13] = temp+48;
-  rgbWriteDatagram[14] = (Temperature_Update%1000)/100+48;
-  rgbWriteDatagram[15] = (Temperature_Update)/10+48;
-  rgbWriteDatagram[17] = Temperature_Update%10+48;
+  rgbWriteDatagram[14] = (Temperature_temp%1000)/100+48;
+  rgbWriteDatagram[15] = (Temperature_temp%100)/10+48;
+  rgbWriteDatagram[17] = (Temperature_temp%10)+48;
   // delay(2000);
 }
 
