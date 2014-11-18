@@ -43,6 +43,22 @@
 //******************************************************************************************
 //******************************************************************************************
 
+/*
+2014年11月18日
+Designer：骆晓祥 刘宇林 王衡
+测量值：	传感器						        端口
+温湿度		DTH11						数字口1
+PM2.5		GP2Y1010AU0F 				        模拟口A0 数字口2
+气压		BMP180						
+液位		液位传感器（电容）			                模拟口A11
+风速		光电开关	
+光线		光线传感器 模拟输出 			        模拟口A6
+风向		光线传感器 模拟输出 			        模拟口A1				
+*/
+
+
+
+
 /************************************************************************/
 /*                                                                      */
 /*              Include ONLY 1 hardware library that matches            */
@@ -52,6 +68,8 @@
 /*              for supported boards and hardware configurations        */
 /*                                                                      */
 /************************************************************************/
+
+
 // #include <WiFiShieldOrPmodWiFi.h>                       // This is for the MRF24WBxx on a pmodWiFi or WiFiShield
 #include <WiFiShieldOrPmodWiFi_G.h>                     // This is for the MRF24WGxx on a pmodWiFi or WiFiShield
 
@@ -196,7 +214,7 @@ int data = 0; //定义变量data 初值为0
 /********温湿度**********/
 #include <dht11.h>
 dht11 DHT11;
-#define DHT11PIN 3
+#define DHT11PIN 1
 
 /*******PM2.5**********/
 int dustPin=A0;
