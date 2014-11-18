@@ -103,7 +103,7 @@ const int chipSelect_SD = chipSelect_SD_default;
 /*                                                                      */
 /************************************************************************/
 
-char * szIPServer = "192.168.165.2";
+char * szIPServer = "192.168.165.152";
 unsigned short portServer = 8080;           //DNETcK::iPersonalPorts44 + 400;     // port 44400
 
 // Specify the SSID
@@ -525,7 +525,8 @@ void Light_Level()
   Light_val = analogRead(Light); //读取模拟值送给变量val
   Light_Update = Light_val;
   rgbWriteDatagram[23] = (Light_val/1000+48);
-  Serial.println(rgbWriteDatagram[23]);
+  Serial.print("Light:");
+  Serial.println(Light_Update);
   rgbWriteDatagram[24] = (Light_val%1000)/100+48;
   rgbWriteDatagram[25] = (Light_val%100)/10+48;
   rgbWriteDatagram[26] = Light_val%10+48;
@@ -562,7 +563,7 @@ void stateChange()
 void Updata_Water_Level()
 {
   val = analogRead(analogPin); //读取模拟值送给变量val
-  Serial.print("Water");
+  Serial.print("Water:");
   Serial.println(val);
   Water_Level_Update = val%1000; //变量val 赋值给变量data
   rgbWriteDatagram[0] = (byte)Water_Level_Update%10+48;
@@ -703,7 +704,7 @@ void WindDirUpdata()
   WindDirValue = analogRead(WindDir);    
   Serial.print("V:");
   Serial.println(WindDirValue);
-  WindDirValue = ((WindDirValue*5/1023)-0.4)/16*360/1.66;
+  WindDirValue = ((WindDirValue*5/1023)-0.4)/16*360;
   Serial.print("windDir:");
   Serial.println(WindDirValue);
   if(WindDirValue<4.5)
