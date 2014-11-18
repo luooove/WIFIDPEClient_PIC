@@ -103,7 +103,7 @@ const int chipSelect_SD = chipSelect_SD_default;
 /*                                                                      */
 /************************************************************************/
 
-char * szIPServer = "192.168.165.152";
+char * szIPServer = "192.168.165.2";
 unsigned short portServer = 8080;           //DNETcK::iPersonalPorts44 + 400;     // port 44400
 
 // Specify the SSID
